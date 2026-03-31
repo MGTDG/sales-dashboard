@@ -137,7 +137,41 @@
         .rag-dot.amber { background-color: #fbbf24; }
         .rag-dot.red { background-color: #f85149; }
 
-        .updated-stamp { text-align: center; padding: 20px; font-size: 12px; color: #6e7681; }
+        .stage-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+        }
+        .stage-quote { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+        .stage-conversation { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+        .stage-interested { background: rgba(82, 183, 136, 0.15); color: #52B788; }
+        .stage-awaiting { background: rgba(210, 153, 34, 0.15); color: #d29922; }
+        .stage-hot { background: rgba(255, 203, 0, 0.15); color: #ffcb00; }
+
+        .forecast-box {
+            background-color: #161922;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 24px;
+        }
+        .forecast-box h3 {
+            font-size: 14px; font-weight: 600; color: #79c0ff; margin-bottom: 20px;
+        }
+        .forecast-breakdown-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #2a2d3a;
+        }
+        .forecast-breakdown-item:last-child { border-bottom: none; }
+        .forecast-breakdown-label { font-weight: 600; color: #e6edf3; }
+        .forecast-breakdown-detail { font-size: 11px; color: #6e7681; }
+        .forecast-breakdown-value { font-size: 18px; font-weight: 700; }
+
+        .updated-stamp { text-align: center; padding: 20px; font-size: 12px; color: #6e7681; margin-top: 40px; border-top: 1px solid #2a2d3a; }
+
+        @media (max-width: 768px) {
+            .kpi-row { grid-template-columns: 1fr; }
+            .chart-grid { grid-template-columns: 1fr; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 22px; }
+            .header-meta { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -168,7 +202,108 @@
     <!-- Month Cards -->
     <div class="month-cards" id="monthCards"></div>
 
-    <!-- Charts -->
+    <!-- Pipeline by Stage -->
+    <div class="section">
+        <h2 class="section-title">Pipeline by Stage</h2>
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3>Deal Count by Stage</h3>
+                <canvas id="stageCountChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Pipeline Value by Stage</h3>
+                <canvas id="stageValueChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Clients by Pipeline Value -->
+    <div class="section">
+        <h2 class="section-title">Top 10 Clients by Pipeline Value</h2>
+        <table id="topClientsTable">
+            <thead>
+                <tr>
+                    <th style="width: 8%">Rank</th>
+                    <th style="width: 35%">Client</th>
+                    <th style="width: 25%">Stage</th>
+                    <th style="width: 20%" class="text-right">Value</th>
+                    <th style="width: 12%" class="text-right">% Pipeline</th>
+                </tr>
+            </thead>
+            <tbody id="topClientsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Hot Deals -->
+    <div class="section">
+        <h2 class="section-title">Hot Deals & Awaiting Order</h2>
+        <table id="hotDealsTable">
+            <thead>
+                <tr>
+                    <th style="width: 30%">Deal</th>
+                    <th style="width: 25%">Client</th>
+                    <th style="width: 15%" class="text-right">Value</th>
+                    <th style="width: 20%">Owner</th>
+                    <th style="width: 10%">Stage</th>
+                </tr>
+            </thead>
+            <tbody id="hotDealsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Revenue Forecast -->
+    <div class="section">
+        <h2 class="section-title" id="forecastTitle">Revenue Forecast</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <!-- Forecast Gauge -->
+            <div class="forecast-box">
+                <h3>Predicted Revenue vs Target</h3>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; font-weight: 700; color: #52B788;" id="predictedValue">—</div>
+                    <div style="font-size: 13px; color: #8b949e; margin-top: 4px;" id="predictedLabel">—</div>
+                </div>
+                <canvas id="forecastGauge" style="max-height: 160px;"></canvas>
+                <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px;">
+                    <div style="text-align: center;">
+                        <div style="color: #f85149; font-weight: 600;" id="conservativeValue">—</div>
+                        <div style="color: #6e7681;">Conservative</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #52B788; font-weight: 700; font-size: 14px;" id="expectedValue">—</div>
+                        <div style="color: #6e7681;">Expected</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #60a5fa; font-weight: 600;" id="optimisticValue">—</div>
+                        <div style="color: #6e7681;">Optimistic</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forecast Breakdown -->
+            <div class="forecast-box">
+                <h3>How the Forecast Breaks Down</h3>
+                <div style="margin-bottom: 16px;" id="forecastBreakdown"></div>
+            </div>
+        </div>
+
+        <!-- Top Deals to Close -->
+        <h2 class="section-title" style="margin-top: 30px; margin-bottom: 16px;">Top Deals Most Likely to Close</h2>
+        <table id="topDealsTable">
+            <thead>
+                <tr>
+                    <th style="width: 30%">Deal</th>
+                    <th style="width: 20%">Stage</th>
+                    <th style="width: 15%" class="text-right">Deal Value</th>
+                    <th style="width: 10%" class="text-right">Probability</th>
+                    <th style="width: 15%" class="text-right">Expected Value</th>
+                    <th style="width: 10%" class="text-right">Confidence</th>
+                </tr>
+            </thead>
+            <tbody id="topDealsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Current Month Breakdown -->
     <div class="section">
         <h2 class="section-title">Current Month Breakdown</h2>
         <div class="chart-grid">
@@ -183,22 +318,35 @@
         </div>
     </div>
 
-    <!-- Band Analysis -->
+    <!-- Business Targets by Band -->
     <div class="section">
-        <h2 class="section-title" id="bandTableTitle">Band Analysis</h2>
-        <table id="bandTable">
+        <h2 class="section-title">Business Targets by Band</h2>
+        <table id="bandFullTable">
             <thead>
                 <tr>
-                    <th>Band</th>
-                    <th class="text-right">Target</th>
-                    <th class="text-right">Won</th>
-                    <th class="text-right">Deals</th>
-                    <th class="text-right">% Target</th>
-                    <th class="text-right">RAG</th>
+                    <th style="width: 18%">Band</th>
+                    <th style="width: 18%" class="text-right">Target Revenue</th>
+                    <th style="width: 14%" class="text-right">Quotes Sent</th>
+                    <th style="width: 16%" class="text-right">Quote Value</th>
+                    <th style="width: 14%" class="text-right">Actual Wins</th>
+                    <th style="width: 14%" class="text-right">Actual Revenue</th>
+                    <th style="width: 6%" class="text-right">%</th>
                 </tr>
             </thead>
-            <tbody id="bandTableBody"></tbody>
+            <tbody id="bandFullBody"></tbody>
         </table>
+
+        <!-- Band Charts -->
+        <div class="chart-grid" style="margin-top: 24px;">
+            <div class="chart-container">
+                <h3 id="bandChartActualTitle">Actual vs Target by Band</h3>
+                <canvas id="bandActualTarget" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 id="bandChartForecastTitle">Forecast vs Target by Band</h3>
+                <canvas id="bandForecastTarget" class="chart-canvas"></canvas>
+            </div>
+        </div>
     </div>
 
     <!-- Top Wins -->
@@ -257,19 +405,81 @@ const MONTHLY_DATA = {
             'Large (£25-100K)': { target: 200000, won: 113100, deals: 3 },
             'Major (>£100K)': { target: 298000, won: 574700, deals: 3 },
         },
+        pipeline: {
+            stages: {
+                'Quote Sent 25k+': { count: 33, value: 3996400 },
+                'Conversation Stage': { count: 10, value: 500000 },
+                'Interested': { count: 4, value: 200000 },
+                'Awaiting Order': { count: 1, value: 310000 },
+                'Hot Deal': { count: 1, value: 849000 },
+            },
+            topClients: [
+                { rank: 1, client: 'CBRE', stage: 'Quote Sent 25k+', value: 545000, pctPipeline: 11.6 },
+                { rank: 2, client: 'ID Construction', stage: 'Quote Sent 25k+', value: 383000, pctPipeline: 8.1 },
+                { rank: 3, client: 'MITIE FM', stage: 'Quote Sent 25k+', value: 360500, pctPipeline: 7.7 },
+                { rank: 4, client: 'Giles Davies', stage: 'Quote Sent 25k+', value: 340000, pctPipeline: 7.2 },
+                { rank: 5, client: 'Graham', stage: 'Quote Sent 25k+', value: 316000, pctPipeline: 6.7 },
+                { rank: 6, client: 'B&M Retail', stage: 'Quote Sent 25k+', value: 310000, pctPipeline: 6.6 },
+                { rank: 7, client: 'Savills', stage: 'Quote Sent 25k+', value: 270000, pctPipeline: 5.7 },
+                { rank: 8, client: 'TJX Europe', stage: 'Quote Sent 25k+', value: 250000, pctPipeline: 5.3 },
+                { rank: 9, client: 'JD Sports', stage: 'Quote Sent 25k+', value: 200000, pctPipeline: 4.3 },
+                { rank: 10, client: 'Langley', stage: 'Quote Sent 25k+', value: 180000, pctPipeline: 3.8 },
+            ],
+        },
+        forecast: {
+            nextMonth: 'Apr',
+            predicted: 1547000,
+            conservative: 956000,
+            optimistic: 2131000,
+            breakdown: [
+                { source: 'Awaiting Order', deals: 3, pipeline: 310000, closeRate: 85, expected: 263000, color: '#52B788' },
+                { source: 'Hot Deals', deals: 8, pipeline: 849000, closeRate: 50, expected: 425000, color: '#d29922' },
+                { source: 'Quoted Pipeline (25K+)', deals: 154, pipeline: 24200000, closeRate: 3, expected: 727000, color: '#6366f1' },
+                { source: 'Callouts & Small Works', deals: 0, pipeline: 0, closeRate: 0, expected: 112000, color: '#60a5fa', note: 'Based on March run-rate (Sub-£10K band)' },
+                { source: 'Early Stage', deals: 32, pipeline: 2600000, closeRate: 0, expected: 19000, color: '#8b949e', note: 'low probability' },
+            ],
+            topDealsToClose: [
+                { name: 'Rocklands School', stage: 'Hot Deal', stageColor: '#ffcb00', value: 338100, probability: 50, expected: 169000, confidence: 'amber' },
+                { name: 'Welsh Air Ambulance', stage: 'Awaiting Order', stageColor: '#52B788', value: 178900, probability: 85, expected: 152100, confidence: 'green' },
+                { name: 'Units 5,7,9 & 11 Tir Llwyd', stage: 'Hot Deal', stageColor: '#ffcb00', value: 160000, probability: 50, expected: 80000, confidence: 'amber' },
+                { name: 'PMY Group', stage: 'Hot Deal', stageColor: '#ffcb00', value: 110000, probability: 50, expected: 55000, confidence: 'amber' },
+                { name: 'Shotton Mill', stage: 'Hot Deal', stageColor: '#ffcb00', value: 95900, probability: 50, expected: 48000, confidence: 'amber' },
+                { name: 'Springvale - Overclad', stage: 'Awaiting Order', stageColor: '#52B788', value: 73000, probability: 85, expected: 62100, confidence: 'green' },
+                { name: 'TK Maxx Cambridge', stage: 'Hot Deal', stageColor: '#ffcb00', value: 65000, probability: 50, expected: 32500, confidence: 'amber' },
+                { name: 'Bloc - Mexican Wave, Colwyn Bay', stage: 'Awaiting Order', stageColor: '#52B788', value: 58000, probability: 85, expected: 49300, confidence: 'green' },
+                { name: 'William Hill Edgeley', stage: 'Hot Deal', stageColor: '#ffcb00', value: 40000, probability: 50, expected: 20000, confidence: 'amber' },
+                { name: 'Hire Safe Solutions Ltd', stage: 'Hot Deal', stageColor: '#ffcb00', value: 24400, probability: 50, expected: 12200, confidence: 'amber' },
+            ],
+        },
+        hotDeals: [
+            { name: 'Springvale - Overclad', client: 'Springvale', value: 73000, person: 'Grace', stage: 'Awaiting Order' },
+            { name: 'William Hill Edgeley', client: 'i2i by Citipost', value: 40000, person: 'Ste', stage: 'Hot Deal' },
+            { name: 'Shotton Mill', client: 'Shotton Mill', value: 95900, person: 'Unassigned', stage: 'Hot Deal' },
+            { name: 'TK Maxx Cambridge', client: 'TJX Europe', value: 65000, person: 'Dave', stage: 'Hot Deal' },
+            { name: 'Rocklands School lead', client: 'Langley', value: 338000, person: 'Unassigned', stage: 'Hot Deal' },
+            { name: 'PMY Group', client: 'PMY Group', value: 110000, person: 'Grace', stage: 'Hot Deal' },
+            { name: 'Hire Safe Solutions Ltd', client: 'Hire Safe Solutions Ltd', value: 24400, person: 'Unassigned', stage: 'Hot Deal' },
+            { name: 'The Arc Cinema', client: 'The Arc Cinema', value: 15700, person: 'Grace', stage: 'Hot Deal' },
+        ],
+        bandsFull: {
+            'Sub-£1K': { target: 40000, quotesSent: 88, quoteValue: 69300, actualWins: 88, actualRevenue: 69300 },
+            '£1K - £10K': { target: 225000, quotesSent: 2, quoteValue: 7300, actualWins: 12, actualRevenue: 42800 },
+            '£10K - £25K': { target: 320000, quotesSent: 10, quoteValue: 247800, actualWins: 3, actualRevenue: 54700 },
+            '£25K - £50K': { target: 280000, quotesSent: 11, quoteValue: 464100, actualWins: 2, actualRevenue: 80500 },
+            '£50K - £100K': { target: 140000, quotesSent: 13, quoteValue: 985300, actualWins: 0, actualRevenue: 0 },
+            '£100K+': { target: 78000, quotesSent: 13, quoteValue: 2996400, actualWins: 4, actualRevenue: 819400 },
+        },
         generated: '2026-03-31T19:30:00Z'
     },
-    // NEXT MONTH ENTRY WILL BE ADDED HERE BY SCHEDULED TASK:
-    // '2026-04': { revenue: ..., deals: ..., topWins: [...], workMix: {...}, bands: {...}, generated: '...' },
 };
 
 // ============================================================
-// RENDERING ENGINE — don't edit below this line
+// RENDERING ENGINE
 // ============================================================
 function fmt(v) {
-    if (v >= 1000000) return '\u00A3' + (v / 1000000).toFixed(1) + 'M';
-    if (v >= 1000) return '\u00A3' + Math.round(v / 1000).toLocaleString() + 'K';
-    return '\u00A3' + v.toLocaleString();
+    if (v >= 1000000) return '£' + (v / 1000000).toFixed(1) + 'M';
+    if (v >= 1000) return '£' + Math.round(v / 1000).toLocaleString() + 'K';
+    return '£' + v.toLocaleString();
 }
 
 function getYTD() {
@@ -284,6 +494,15 @@ function getLatestMonth() {
     let latest = null;
     for (const key of CONFIG.fyMonthKeys) { if (MONTHLY_DATA[key]) latest = key; }
     return latest;
+}
+
+function getStageBadgeClass(stage) {
+    if (stage.includes('Quote Sent') || stage.includes('25k')) return 'stage-quote';
+    if (stage.includes('Conversation')) return 'stage-conversation';
+    if (stage.includes('Interested')) return 'stage-interested';
+    if (stage.includes('Awaiting')) return 'stage-awaiting';
+    if (stage.includes('Hot Deal')) return 'stage-hot';
+    return 'stage-quote';
 }
 
 function render() {
@@ -320,7 +539,7 @@ function render() {
         </div>
         <div class="kpi-card" style="border-color:${rc}">
             <div class="kpi-label">Annual Target</div>
-            <div class="kpi-value" style="color:${rc}">\u00A313.0M</div>
+            <div class="kpi-value" style="color:${rc}">£13.0M</div>
             <div class="kpi-period">Full Year Target</div>
             <div class="kpi-subtext" style="color:${rc}">${runRateDiff>=0?'▲':'▼'} ${fmt(Math.abs(runRateDiff))} ${runRateDiff>=0?'ahead of':'behind'} run-rate after Month ${monthsComplete}</div>
         </div>
@@ -328,12 +547,12 @@ function render() {
             <div class="kpi-label">Run Rate (Annualised)</div>
             <div class="kpi-value">${fmt(ytd.total / monthsComplete * 12)}</div>
             <div class="kpi-period">Based on ${monthsComplete} month${monthsComplete>1?'s':''}</div>
-            <div class="kpi-subtext">${((ytd.total / monthsComplete * 12 / CONFIG.annualTarget) * 100).toFixed(0)}% of \u00A313M on current pace</div>
+            <div class="kpi-subtext">${((ytd.total / monthsComplete * 12 / CONFIG.annualTarget) * 100).toFixed(0)}% of £13M on current pace</div>
         </div>
     `;
 
     // YTD bar
-    document.getElementById('ytdValue').textContent = fmt(ytd.total) + ' / \u00A313M (' + ytdPct + '%)';
+    document.getElementById('ytdValue').textContent = fmt(ytd.total) + ' / £13M (' + ytdPct + '%)';
     const fill = document.getElementById('ytdFill');
     fill.style.width = Math.min(parseFloat(ytdPct), 100) + '%';
     fill.textContent = ytdPct + '%';
@@ -343,7 +562,7 @@ function render() {
     document.getElementById('monthCards').innerHTML = CONFIG.fyMonthKeys.map((key, i) => {
         const d = MONTHLY_DATA[key];
         const active = key === latestKey;
-        let cls = 'month-card', val = '\u2014', pct = '', pcls = 'pending';
+        let cls = 'month-card', val = '—', pct = '', pcls = 'pending';
         if (d) {
             const p = ((d.revenue / CONFIG.monthlyTarget) * 100).toFixed(0);
             val = fmt(d.revenue); pct = p + '%';
@@ -354,14 +573,164 @@ function render() {
         return '<div class="'+cls+'"><div class="month-name">'+CONFIG.fyMonths[i]+'</div><div class="month-value">'+val+'</div><div class="month-pct '+pcls+'">'+pct+'</div></div>';
     }).join('');
 
+    // Pipeline Stage Charts
+    if (latestData.pipeline) {
+        const stages = latestData.pipeline.stages;
+        const stageLabels = Object.keys(stages);
+        const stageCounts = stageLabels.map(s => stages[s].count);
+        const stageValues = stageLabels.map(s => stages[s].value);
+        const stageColors = ['#6366f1', '#60a5fa', '#52B788', '#d29922', '#f85149'];
+
+        new Chart(document.getElementById('stageCountChart'), {
+            type: 'doughnut',
+            data: {
+                labels: stageLabels,
+                datasets: [{
+                    data: stageCounts,
+                    backgroundColor: stageColors.slice(0, stageLabels.length),
+                    borderColor: '#1a1d27',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8b949e', padding: 15, font: { size: 12 } } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('stageValueChart'), {
+            type: 'doughnut',
+            data: {
+                labels: stageLabels,
+                datasets: [{
+                    data: stageValues,
+                    backgroundColor: stageColors.slice(0, stageLabels.length),
+                    borderColor: '#1a1d27',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8b949e', padding: 15, font: { size: 12 } } },
+                    tooltip: { callbacks: { label: c => fmt(c.raw) } }
+                }
+            }
+        });
+    }
+
+    // Top Clients
+    if (latestData.pipeline && latestData.pipeline.topClients) {
+        const clients = latestData.pipeline.topClients;
+        document.getElementById('topClientsBody').innerHTML = clients.map(c => `
+            <tr>
+                <td>${c.rank}</td>
+                <td>${c.client}</td>
+                <td><span class="stage-badge ${getStageBadgeClass(c.stage)}">${c.stage}</span></td>
+                <td class="text-right currency">${fmt(c.value)}</td>
+                <td class="text-right">${c.pctPipeline}%</td>
+            </tr>
+        `).join('');
+    }
+
+    // Hot Deals
+    if (latestData.hotDeals) {
+        document.getElementById('hotDealsBody').innerHTML = latestData.hotDeals.map(d => `
+            <tr>
+                <td style="font-weight:600">${d.name}</td>
+                <td>${d.client}</td>
+                <td class="text-right currency">${fmt(d.value)}</td>
+                <td>${d.person}</td>
+                <td><span class="stage-badge ${getStageBadgeClass(d.stage)}">${d.stage}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    // Forecast Section
+    if (latestData.forecast) {
+        const f = latestData.forecast;
+        document.getElementById('forecastTitle').textContent = `Revenue Forecast (${f.nextMonth} 2026)`;
+        document.getElementById('predictedValue').textContent = fmt(f.predicted);
+        document.getElementById('predictedLabel').textContent = `Expected | ${((f.predicted / CONFIG.monthlyTarget) * 100).toFixed(0)}% of ${fmt(CONFIG.monthlyTarget)} target`;
+        document.getElementById('conservativeValue').textContent = fmt(f.conservative);
+        document.getElementById('expectedValue').textContent = fmt(f.predicted);
+        document.getElementById('optimisticValue').textContent = fmt(f.optimistic);
+
+        // Forecast Breakdown
+        document.getElementById('forecastBreakdown').innerHTML = f.breakdown.map(b => `
+            <div class="forecast-breakdown-item">
+                <div>
+                    <div class="forecast-breakdown-label">${b.source}</div>
+                    <div class="forecast-breakdown-detail">${b.deals} deals · ${fmt(b.pipeline)} pipeline · ${b.closeRate}% close rate${b.note ? ' · '+b.note : ''}</div>
+                </div>
+                <div class="forecast-breakdown-value" style="color:${b.color}">${fmt(b.expected)}</div>
+            </div>
+        `).join('');
+
+        // Forecast Gauge
+        new Chart(document.getElementById('forecastGauge'), {
+            type: 'bar',
+            data: {
+                labels: ['Conservative', 'Expected', 'Optimistic'],
+                datasets: [{
+                    data: [f.conservative / 1000, f.predicted / 1000, f.optimistic / 1000],
+                    backgroundColor: ['#f85149', '#52B788', '#60a5fa'],
+                    borderColor: ['#f85149', '#52B788', '#60a5fa'],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 28
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: c => '£' + (c.raw * 1000).toLocaleString() } }
+                },
+                scales: {
+                    x: { beginAtZero: true, max: 2500, grid: { color: 'rgba(42, 45, 58, 0.5)' }, ticks: { color: '#8b949e', callback: v => '£' + v + 'K' } },
+                    y: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 11 } } }
+                }
+            }
+        });
+
+        // Top Deals to Close
+        document.getElementById('topDealsBody').innerHTML = f.topDealsToClose.map(d => `
+            <tr>
+                <td style="font-weight:600">${d.name}</td>
+                <td><span class="stage-badge ${getStageBadgeClass(d.stage)}" style="background:rgba(${d.stageColor.slice(1).match(/.{2}/g).map(x=>'0x'+x).join(', ')}, 0.15); color:${d.stageColor};">${d.stage}</span></td>
+                <td class="text-right currency">${fmt(d.value)}</td>
+                <td class="text-right">${d.probability}%</td>
+                <td class="text-right currency">${fmt(d.expected)}</td>
+                <td class="text-right"><span class="rag-dot ${d.confidence}"></span></td>
+            </tr>
+        `).join('');
+    }
+
     // Work Mix donut
     if (latestData.workMix) {
         document.getElementById('chartWorkMixTitle').textContent = latestLabel + ' Work Mix';
         const wm = latestData.workMix;
         new Chart(document.getElementById('workMixChart'), {
             type: 'doughnut',
-            data: { labels: Object.keys(wm), datasets: [{ data: Object.values(wm).map(v=>v.value), backgroundColor: ['#6366f1','#3b82f6','#10b981','#f59e0b'], borderWidth: 0 }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16 } }, tooltip: { callbacks: { label: c => c.label+': '+fmt(c.raw) } } } }
+            data: {
+                labels: Object.keys(wm),
+                datasets: [{
+                    data: Object.values(wm).map(v => v.value),
+                    backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16 } },
+                    tooltip: { callbacks: { label: c => c.label + ': ' + fmt(c.raw) } }
+                }
+            }
         });
     }
 
@@ -383,25 +752,85 @@ function render() {
         },
         options: {
             responsive: true,
-            scales: { y: { beginAtZero: true, ticks: { color: '#6e7681', callback: v => fmt(v) }, grid: { color: '#1e2130' } }, x: { ticks: { color: '#8b949e' }, grid: { display: false } } },
-            plugins: { legend: { labels: { color: '#8b949e' } }, tooltip: { callbacks: { label: c => c.dataset.label+': '+fmt(c.raw) } } }
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#6e7681', callback: v => fmt(v) }, grid: { color: '#1e2130' } },
+                x: { ticks: { color: '#8b949e' }, grid: { display: false } }
+            },
+            plugins: { legend: { labels: { color: '#8b949e' } }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + fmt(c.raw) } } }
         }
     });
 
-    // Band table
-    if (latestData.bands) {
-        document.getElementById('bandTableTitle').textContent = latestLabel + ' Band Analysis';
-        const tb = document.getElementById('bandTableBody');
-        let tT=0, tW=0, tD=0, rows='';
-        for (const [b,d] of Object.entries(latestData.bands)) {
-            const p = d.target>0 ? ((d.won/d.target)*100).toFixed(0) : 0;
-            const rc = p>=100?'green':p>=75?'amber':'red';
-            tT+=d.target; tW+=d.won; tD+=d.deals;
-            rows += `<tr><td>${b}</td><td class="text-right currency">${fmt(d.target)}</td><td class="text-right currency">${fmt(d.won)}</td><td class="text-right">${d.deals}</td><td class="text-right" style="color:${p>=100?'#52B788':p>=75?'#fbbf24':'#f85149'};font-weight:600">${p}%</td><td class="text-right"><span class="rag-dot ${rc}"></span></td></tr>`;
-        }
-        const tp = tT>0?((tW/tT)*100).toFixed(0):0;
-        rows += `<tr style="background:rgba(99,102,241,0.1);font-weight:600"><td>TOTAL</td><td class="text-right currency">${fmt(tT)}</td><td class="text-right currency">${fmt(tW)}</td><td class="text-right">${tD}</td><td class="text-right" style="color:${tp>=100?'#52B788':'#f85149'};font-weight:600">${tp}%</td><td class="text-right"><span class="rag-dot ${tp>=100?'green':'red'}"></span></td></tr>`;
-        tb.innerHTML = rows;
+    // Band Full Table
+    if (latestData.bandsFull) {
+        const bf = latestData.bandsFull;
+        document.getElementById('bandFullBody').innerHTML = Object.entries(bf).map(([band, data]) => {
+            const pct = data.target > 0 ? ((data.actualRevenue / data.target) * 100).toFixed(0) : 0;
+            const rc = pct >= 100 ? '#52B788' : pct >= 75 ? '#fbbf24' : '#f85149';
+            return `<tr>
+                <td style="font-weight:600">${band}</td>
+                <td class="text-right currency">${fmt(data.target)}</td>
+                <td class="text-right">${data.quotesSent}</td>
+                <td class="text-right currency">${fmt(data.quoteValue)}</td>
+                <td class="text-right">${data.actualWins}</td>
+                <td class="text-right currency">${fmt(data.actualRevenue)}</td>
+                <td class="text-right" style="color:${rc};font-weight:600">${pct}%</td>
+            </tr>`;
+        }).join('');
+
+        // Add total row
+        let tTarget = 0, tQS = 0, tQV = 0, tAW = 0, tAR = 0;
+        Object.values(bf).forEach(d => { tTarget += d.target; tQS += d.quotesSent; tQV += d.quoteValue; tAW += d.actualWins; tAR += d.actualRevenue; });
+        const tPct = tTarget > 0 ? ((tAR / tTarget) * 100).toFixed(0) : 0;
+        document.getElementById('bandFullBody').innerHTML += `<tr style="background:rgba(99,102,241,0.1);font-weight:600">
+            <td>TOTAL</td>
+            <td class="text-right currency">${fmt(tTarget)}</td>
+            <td class="text-right">${tQS}</td>
+            <td class="text-right currency">${fmt(tQV)}</td>
+            <td class="text-right">${tAW}</td>
+            <td class="text-right currency">${fmt(tAR)}</td>
+            <td class="text-right" style="color:${tPct>=100?'#52B788':'#f85149'};font-weight:600">${tPct}%</td>
+        </tr>`;
+
+        // Band charts
+        const bandLabels = Object.keys(bf);
+        const bandTargets = bandLabels.map(b => bf[b].target / 1000);
+        const bandActuals = bandLabels.map(b => bf[b].actualRevenue / 1000);
+        const bandForecasts = [65, 45, 85, 180, 350, 822];
+
+        document.getElementById('bandChartActualTitle').textContent = latestLabel + ' Actual vs Target by Band';
+        document.getElementById('bandChartForecastTitle').textContent = (latestData.forecast?.nextMonth || 'Next') + ' Forecast vs Target by Band';
+
+        new Chart(document.getElementById('bandActualTarget'), {
+            type: 'bar',
+            data: {
+                labels: bandLabels,
+                datasets: [
+                    { label: 'Target (£K)', data: bandTargets, backgroundColor: 'rgba(99, 102, 241, 0.3)', borderColor: '#6366f1', borderWidth: 2, borderRadius: 4 },
+                    { label: 'Actual (£K)', data: bandActuals, backgroundColor: bandActuals.map((a, i) => a >= bandTargets[i] ? 'rgba(82, 183, 136, 0.6)' : 'rgba(248, 81, 73, 0.6)'), borderColor: bandActuals.map((a, i) => a >= bandTargets[i] ? '#52B788' : '#f85149'), borderWidth: 2, borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#8b949e', padding: 12, font: { size: 11 } } }, tooltip: { callbacks: { label: c => c.dataset.label + ': £' + c.raw.toLocaleString() + 'K' } } },
+                scales: { x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 10 } } }, y: { grid: { color: 'rgba(42, 45, 58, 0.5)' }, ticks: { color: '#8b949e', callback: v => '£' + v + 'K' } } }
+            }
+        });
+
+        new Chart(document.getElementById('bandForecastTarget'), {
+            type: 'bar',
+            data: {
+                labels: bandLabels,
+                datasets: [
+                    { label: 'Target (£K)', data: bandTargets, backgroundColor: 'rgba(99, 102, 241, 0.3)', borderColor: '#6366f1', borderWidth: 2, borderRadius: 4 },
+                    { label: 'Forecast (£K)', data: bandForecasts, backgroundColor: bandForecasts.map((f, i) => f >= bandTargets[i] ? 'rgba(96, 165, 250, 0.6)' : 'rgba(210, 153, 34, 0.6)'), borderColor: bandForecasts.map((f, i) => f >= bandTargets[i] ? '#60a5fa' : '#d29922'), borderWidth: 2, borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#8b949e', padding: 12, font: { size: 11 } } }, tooltip: { callbacks: { label: c => c.dataset.label + ': £' + c.raw.toLocaleString() + 'K' } } },
+                scales: { x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 10 } } }, y: { grid: { color: 'rgba(42, 45, 58, 0.5)' }, ticks: { color: '#8b949e', callback: v => '£' + v + 'K' } } }
+            }
+        });
     }
 
     // Top wins
